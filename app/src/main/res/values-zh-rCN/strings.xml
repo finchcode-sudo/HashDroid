@@ -57,6 +57,9 @@
         <item>SHA-512</item>
         <item>Tiger</item>
         <item>Whirlpool</item>
+        <item>SHA3-256</item>
+        <item>SHA3-512</item>
+        <item>BLAKE2b-512</item>
     </string-array>
     <string name="input_txt1">请输入第一个哈希值：</string>
     <string name="input_txt2">请输入第二个哈希值：</string>
