@@ -191,6 +191,12 @@ public class TextActivity extends Activity implements Runnable {
             sAlgo = "tiger";
         else if (miItePos == 13)
             sAlgo = "whirlpool";
+        else if (miItePos == 14)
+            sAlgo = "sha3-256";
+        else if (miItePos == 15)
+            sAlgo = "sha3-512";
+        else if (miItePos == 16)
+            sAlgo = "blake2b-512";
         mHashOpe.SetAlgorithm(sAlgo);
 
         String sCalculating = getString(R.string.Calculating);
