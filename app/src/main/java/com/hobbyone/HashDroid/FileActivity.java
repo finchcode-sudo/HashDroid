@@ -299,7 +299,7 @@ public class FileActivity extends Activity implements Runnable {
             if (!hash.equals("")) {
                 String displayHash = upper ? hash.toUpperCase() : hash.toLowerCase();
                 sFileHashTitle = String.format(res.getString(R.string.Hash), Function, displayHash);
-                copyPayload = sFileNameTitle + sFileSizeTitle + sFileHashTitle;
+                copyPayload = displayHash;
             } else {
                 sFileHashTitle = String.format(res.getString(R.string.unable_to_calculate), fileName);
                 copyPayload = null;
