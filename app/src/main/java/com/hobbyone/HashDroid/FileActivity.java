@@ -22,6 +22,7 @@ package com.hobbyone.HashDroid;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.ActivityNotFoundException;
+import android.content.ClipData;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.database.Cursor;
@@ -42,9 +43,10 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 public class FileActivity extends Activity implements Runnable {
     private Button mSelectFileButton = null;
@@ -53,15 +55,15 @@ public class FileActivity extends Activity implements Runnable {
     private Button mCopyButton = null;
     private Spinner mSpinner = null;
     private TextView mResultTV = null;
-    private String msFileSize = "";
-    private String msHash = "";
     private String[] mFunctions;
     private ClipboardManager mClipboard = null;
     private final int SELECT_FILE_REQUEST = 0;
     private HashFunctionOperator mHashOpe = null;
     private ProgressDialog mProgressDialog = null;
     private int miItePos = -1;
-    private Uri mSelectedFileUri = null;
+    private List<Uri> mSelectedFileUris = new ArrayList<>();
+    private String msCombinedResult = "";
+    private String msCombinedHashesOnly = "";
 
     /**
      * Called when the activity is first created.
@@ -90,18 +92,14 @@ public class FileActivity extends Activity implements Runnable {
             @Override
             public void onItemSelected(AdapterView<?> parentView,
                                        View selectedItemView, int position, long id) {
-                // your code here
-                // Hide the copy button
-                if (!msHash.equals(""))
+                if (!msCombinedResult.equals(""))
                     mCopyButton.setVisibility(View.INVISIBLE);
-                // Clean the result text view
                 if (mResultTV != null)
                     mResultTV.setText("");
             }
 
             @Override
             public void onNothingSelected(AdapterView<?> parentView) {
-                // your code here
             }
         });
 
@@ -110,11 +108,10 @@ public class FileActivity extends Activity implements Runnable {
             public void onClick(View v) {
                 try {
                     Intent openExplorerIntent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-                    if (null != openExplorerIntent) {
-                        openExplorerIntent.addCategory(Intent.CATEGORY_OPENABLE);
-                        openExplorerIntent.setType("*/*");
-                        startActivityForResult(Intent.createChooser(openExplorerIntent, "Select a file"), SELECT_FILE_REQUEST);
-                    }
+                    openExplorerIntent.addCategory(Intent.CATEGORY_OPENABLE);
+                    openExplorerIntent.setType("*/*");
+                    openExplorerIntent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+                    startActivityForResult(Intent.createChooser(openExplorerIntent, "Select file(s)"), SELECT_FILE_REQUEST);
                 } catch (ActivityNotFoundException e) {
                 }
             }
@@ -123,19 +120,9 @@ public class FileActivity extends Activity implements Runnable {
         mGenerateButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Perform action on clicks
-                if (null != mSelectedFileUri) {
+                if (!mSelectedFileUris.isEmpty()) {
                     miItePos = mSpinner.getSelectedItemPosition();
-                    File fileToHash = new File(mSelectedFileUri.getPath());
-                    if (fileToHash != null)
-                        ComputeAndDisplayHash();
-                    else {
-                        String sWrongFile = getString(R.string.wrong_file);
-                        if (mResultTV != null)
-                            mResultTV.setText(sWrongFile);
-                        if (mCopyButton != null)
-                            mCopyButton.setVisibility(View.INVISIBLE);
-                    }
+                    ComputeAndDisplayHash();
                 }
             }
         });
@@ -143,9 +130,8 @@ public class FileActivity extends Activity implements Runnable {
         mCopyButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Perform action on clicks
                 if (mClipboard != null) {
-                    mClipboard.setText(msHash);
+                    mClipboard.setText(msCombinedHashesOnly);
                     String sCopied = getString(R.string.copied);
                     Toast.makeText(FileActivity.this, sCopied,
                             Toast.LENGTH_SHORT).show();
@@ -157,21 +143,9 @@ public class FileActivity extends Activity implements Runnable {
         mCheckBox.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Perform action on clicks
-                if (!msHash.equals("")) {
-                    // A hash value has already been calculated,
-                    // just convert it to lower or upper case
-                    String OldHash = msHash;
-                    if (mCheckBox.isChecked()) {
-                        msHash = OldHash.toUpperCase();
-                    } else {
-                        msHash = OldHash.toLowerCase();
-                    }
-                    if (mResultTV != null) {
-                        String sResult = mResultTV.getText().toString();
-                        sResult = sResult.replaceAll(OldHash, msHash);
-                        mResultTV.setText(sResult);
-                    }
+                // Re-render with the new case if a result already exists
+                if (!msCombinedResult.equals("")) {
+                    RenderResult();
                 }
             }
         });
@@ -180,17 +154,53 @@ public class FileActivity extends Activity implements Runnable {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == SELECT_FILE_REQUEST && resultCode == RESULT_OK) {
+            mSelectedFileUris.clear();
             if (data != null) {
-                mSelectedFileUri = data.getData(); //The uri with the location of the file
-                if (null != mSelectedFileUri) {
-                    Cursor cursor = getContentResolver().query(mSelectedFileUri, null, null, null, null);
-                    if (cursor != null && cursor.moveToFirst()) {
-                        String ret = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
-                        mSelectFileButton.setText(ret);
+                if (data.getClipData() != null) {
+                    // Multiple files selected
+                    ClipData clipData = data.getClipData();
+                    for (int i = 0; i < clipData.getItemCount(); i++) {
+                        mSelectedFileUris.add(clipData.getItemAt(i).getUri());
                     }
+                } else if (data.getData() != null) {
+                    // Single file selected
+                    mSelectedFileUris.add(data.getData());
+                }
+            }
+            if (!mSelectedFileUris.isEmpty()) {
+                if (mSelectedFileUris.size() == 1) {
+                    String ret = getFileName(mSelectedFileUris.get(0));
+                    mSelectFileButton.setText(ret);
+                } else {
+                    mSelectFileButton.setText(String.format(
+                            getString(R.string.files_selected), mSelectedFileUris.size()));
                 }
             }
         }
+    }
+
+    private String getFileName(Uri uri) {
+        String name = "";
+        Cursor cursor = getContentResolver().query(uri, null, null, null, null);
+        if (cursor != null && cursor.moveToFirst()) {
+            int idx = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+            if (idx >= 0)
+                name = cursor.getString(idx);
+            cursor.close();
+        }
+        return name;
+    }
+
+    private long getFileSize(Uri uri) {
+        long size = -1;
+        Cursor cursor = getContentResolver().query(uri, null, null, null, null);
+        if (cursor != null && cursor.moveToFirst()) {
+            int idx = cursor.getColumnIndex(OpenableColumns.SIZE);
+            if (idx >= 0)
+                size = cursor.getLong(idx);
+            cursor.close();
+        }
+        return size;
     }
 
     private void ComputeAndDisplayHash() {
@@ -241,30 +251,31 @@ public class FileActivity extends Activity implements Runnable {
         thread.start();
     }
 
+    // Holds the per-file results computed on the background thread
+    private final List<String[]> mFileResults = new ArrayList<>(); // {fileName, fileSizeDisplay, hashOrEmpty}
+
     @Override
     // Call when the thread is started
     public void run() {
-        msHash = "";
-        msFileSize = "";
+        mFileResults.clear();
 
-        if (null != mSelectedFileUri) {
+        for (Uri uri : mSelectedFileUris) {
+            String fileName = getFileName(uri);
+            long size = getFileSize(uri);
+            String sizeDisplay = size >= 0 ? FileSizeDisplay(size, false) : "";
+            String hash = "";
+
             if (mHashOpe != null) {
                 InputStream inputStream = null;
                 try {
-                    inputStream = getContentResolver().openInputStream(mSelectedFileUri);
-
+                    inputStream = getContentResolver().openInputStream(uri);
                 } catch (FileNotFoundException e1) {
                 }
                 if (null != inputStream) {
-                    msHash = mHashOpe.FileToHash(inputStream);
+                    hash = mHashOpe.FileToHash(inputStream);
                 }
             }
-
-            Cursor cursor = getContentResolver().query(mSelectedFileUri, null, null, null, null);
-            if (cursor != null && cursor.moveToFirst()) {
-                int sizeIndex = cursor.getColumnIndex(OpenableColumns.SIZE);
-                msFileSize = FileSizeDisplay(cursor.getLong(sizeIndex), false);
-            }
+            mFileResults.add(new String[]{fileName, sizeDisplay, hash});
         }
         handler.sendEmptyMessage(0);
     }
@@ -279,57 +290,56 @@ public class FileActivity extends Activity implements Runnable {
         return String.format("%.2f %sB", lbytes / Math.pow(unit, exp), pre);
     }
 
+    // Rebuilds the displayed text (and clipboard payload) from mFileResults,
+    // honouring the current upper/lower case checkbox state.
+    private void RenderResult() {
+        Resources res = getResources();
+        boolean upper = mCheckBox != null && mCheckBox.isChecked();
+
+        StringBuilder fullText = new StringBuilder();
+        StringBuilder hashesOnly = new StringBuilder();
+        boolean anySuccess = false;
+
+        String Function = (miItePos >= 0 && miItePos < mFunctions.length) ? mFunctions[miItePos] : "";
+
+        for (String[] entry : mFileResults) {
+            String fileName = entry[0];
+            String sizeDisplay = entry[1];
+            String hash = entry[2];
+
+            String sFileNameTitle = String.format(res.getString(R.string.FileName), fileName);
+            String sFileSizeTitle = String.format(res.getString(R.string.FileSize), sizeDisplay);
+            String sFileHashTitle;
+
+            if (!hash.equals("")) {
+                hash = upper ? hash.toUpperCase() : hash.toLowerCase();
+                sFileHashTitle = String.format(res.getString(R.string.Hash), Function, hash);
+                hashesOnly.append(fileName).append(": ").append(hash).append("\n");
+                anySuccess = true;
+            } else {
+                sFileHashTitle = String.format(res.getString(R.string.unable_to_calculate), fileName);
+            }
+
+            fullText.append(sFileNameTitle).append(sFileSizeTitle).append(sFileHashTitle).append("\n\n");
+        }
+
+        msCombinedResult = fullText.toString();
+        msCombinedHashesOnly = hashesOnly.toString();
+
+        if (mResultTV != null)
+            mResultTV.setText(msCombinedResult);
+
+        if (mCopyButton != null)
+            mCopyButton.setVisibility(anySuccess ? View.VISIBLE : View.INVISIBLE);
+    }
+
     // This method is called when the computation is over
     private Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
-            // Hide the progress dialog
             if (mProgressDialog != null)
                 mProgressDialog.dismiss();
-            if (null != mSelectedFileUri) {
-                File fileToHash = new File(mSelectedFileUri.getPath());
-                if (fileToHash != null) {
-                    Resources res = getResources();
-                    String fileName = "";
-                    Cursor cursor = getContentResolver().query(mSelectedFileUri, null, null, null, null);
-                    if (cursor != null && cursor.moveToFirst()) {
-                        fileName = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
-                    }
-                    String sFileNameTitle = String
-                            .format(res.getString(R.string.FileName),
-                                    fileName);
-                    String sFileSizeTitle = String.format(
-                            res.getString(R.string.FileSize), msFileSize);
-                    String sFileHashTitle = "";
-                    if (!msHash.equals("")) {
-                        if (mCheckBox != null) {
-                            if (mCheckBox.isChecked()) {
-                                msHash = msHash.toUpperCase();
-                            } else {
-                                msHash = msHash.toLowerCase();
-                            }
-                        }
-                        String Function = "";
-                        if (miItePos >= 0)
-                            Function = mFunctions[miItePos];
-                        sFileHashTitle = String.format(
-                                res.getString(R.string.Hash), Function, msHash);
-                        // Show the copy button
-                        if (mCopyButton != null)
-                            mCopyButton.setVisibility(View.VISIBLE);
-                    } else {
-                        sFileHashTitle = String.format(
-                                res.getString(R.string.unable_to_calculate),
-                                fileToHash.getName());
-                        // Hide the copy button
-                        if (mCopyButton != null)
-                            mCopyButton.setVisibility(View.INVISIBLE);
-                    }
-
-                    if (mResultTV != null)
-                        mResultTV.setText(sFileNameTitle + sFileSizeTitle + sFileHashTitle);
-                }
-            }
+            RenderResult();
         }
     };
 }
