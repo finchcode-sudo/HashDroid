@@ -31,9 +31,9 @@
     <string name="version">版本</string>
     <string name="copyright">Copyright © 2010–2019 Christophe Bouyer (Hobby One)</string>
     <string name="LicenseTitle">基于 GPLv3 协议授权</string>
-    <string name="License">本程序是自由软件：您可以按照自由软件基金会发布的 GNU 通用公共许可证的条款重新分发和/或修改它，许可证版本为 3，或（您可以选择）任何更高版本。
+    <string name="License">本程序是自由软件：您可以按照自由软件基金会发布的 GNU 通用公共许可证的条款重新分发和/或修改它，许可证版本为 3，或（您可以选择）任何更高版本
 
-本程序的分发是希望它会有用，但没有任何担保；甚至没有对适销性或特定用途适用性的默示担保。详情请参见 GNU 通用公共许可证。
+本程序的分发是希望它会有用，但没有任何担保；甚至没有对适销性或特定用途适用性的默示担保。详情请参见 GNU 通用公共许可证
 
 您应该已经随本程序收到了一份 GNU 通用公共许可证的副本。如果没有，请参见 http://www.gnu.org/licenses/</string>
     <string name="contact">hobbyone.droid@gmail.com</string>
