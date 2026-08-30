@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Hash Droid</string>
+    <string name="files_selected">%1$d file(s) selected</string>
     <string name="tab_text">Text hash</string>
     <string name="tab_file">File hash</string>
     <string name="tab_compare">Compare hashes</string>
