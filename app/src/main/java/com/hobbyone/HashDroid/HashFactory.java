@@ -100,6 +100,12 @@ public class HashFactory {
             result = new Tiger();
         else if (name.equalsIgnoreCase("whirlpool"))
             result = new Whirlpool();
+        else if (name.equalsIgnoreCase("sha3-256"))
+            result = new Sha3_256();
+        else if (name.equalsIgnoreCase("sha3-512"))
+            result = new Sha3_512();
+        else if (name.equalsIgnoreCase("blake2b-512"))
+            result = new Blake2b512();
 
         return result;
     }
