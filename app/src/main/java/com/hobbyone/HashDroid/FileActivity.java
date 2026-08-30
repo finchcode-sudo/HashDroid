@@ -30,7 +30,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.provider.OpenableColumns;
 import android.text.ClipboardManager;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -63,7 +62,6 @@ public class FileActivity extends Activity implements Runnable {
     private int miItePos = -1;
     private List<Uri> mSelectedFileUris = new ArrayList<>();
     private String msCombinedResult = "";
-    private String msCombinedHashesOnly = "";
 
     /**
      * Called when the activity is first created.
@@ -131,7 +129,7 @@ public class FileActivity extends Activity implements Runnable {
             @Override
             public void onClick(View v) {
                 if (mClipboard != null) {
-                    mClipboard.setText(msCombinedHashesOnly);
+                    mClipboard.setText(msCombinedResult);
                     String sCopied = getString(R.string.copied);
                     Toast.makeText(FileActivity.this, sCopied,
                             Toast.LENGTH_SHORT).show();
@@ -297,7 +295,6 @@ public class FileActivity extends Activity implements Runnable {
         boolean upper = mCheckBox != null && mCheckBox.isChecked();
 
         StringBuilder fullText = new StringBuilder();
-        StringBuilder hashesOnly = new StringBuilder();
         boolean anySuccess = false;
 
         String Function = (miItePos >= 0 && miItePos < mFunctions.length) ? mFunctions[miItePos] : "";
@@ -314,7 +311,6 @@ public class FileActivity extends Activity implements Runnable {
             if (!hash.equals("")) {
                 hash = upper ? hash.toUpperCase() : hash.toLowerCase();
                 sFileHashTitle = String.format(res.getString(R.string.Hash), Function, hash);
-                hashesOnly.append(fileName).append(": ").append(hash).append("\n");
                 anySuccess = true;
             } else {
                 sFileHashTitle = String.format(res.getString(R.string.unable_to_calculate), fileName);
@@ -323,8 +319,7 @@ public class FileActivity extends Activity implements Runnable {
             fullText.append(sFileNameTitle).append(sFileSizeTitle).append(sFileHashTitle).append("\n\n");
         }
 
-        msCombinedResult = fullText.toString();
-        msCombinedHashesOnly = hashesOnly.toString();
+        msCombinedResult = fullText.toString().trim();
 
         if (mResultTV != null)
             mResultTV.setText(msCombinedResult);
