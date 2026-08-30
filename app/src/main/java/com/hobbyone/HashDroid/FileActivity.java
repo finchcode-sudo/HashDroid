@@ -32,6 +32,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.provider.OpenableColumns;
 import android.text.ClipboardManager;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
@@ -39,6 +40,7 @@ import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -52,9 +54,8 @@ public class FileActivity extends Activity implements Runnable {
     private Button mSelectFileButton = null;
     private CheckBox mCheckBox = null;
     private Button mGenerateButton = null;
-    private Button mCopyButton = null;
     private Spinner mSpinner = null;
-    private TextView mResultTV = null;
+    private LinearLayout mResultsContainer = null;
     private String[] mFunctions;
     private ClipboardManager mClipboard = null;
     private final int SELECT_FILE_REQUEST = 0;
@@ -62,7 +63,9 @@ public class FileActivity extends Activity implements Runnable {
     private ProgressDialog mProgressDialog = null;
     private int miItePos = -1;
     private List<Uri> mSelectedFileUris = new ArrayList<>();
-    private String msCombinedResult = "";
+
+    // Holds the per-file results computed on the background thread
+    private final List<String[]> mFileResults = new ArrayList<>(); // {fileName, fileSizeDisplay, hashOrEmpty}
 
     /**
      * Called when the activity is first created.
@@ -75,8 +78,7 @@ public class FileActivity extends Activity implements Runnable {
         mSelectFileButton = (Button) findViewById(R.id.SelectFileButton);
         mGenerateButton = (Button) findViewById(R.id.GenerateButton);
         mSpinner = (Spinner) findViewById(R.id.spinner);
-        mResultTV = (TextView) findViewById(R.id.label_result);
-        mCopyButton = (Button) findViewById(R.id.CopyButton);
+        mResultsContainer = (LinearLayout) findViewById(R.id.results_container);
         mClipboard = (ClipboardManager) getSystemService("clipboard");
         mFunctions = getResources().getStringArray(R.array.Algo_Array);
         mCheckBox = (CheckBox) findViewById(R.id.UpperCaseCB);
@@ -91,10 +93,9 @@ public class FileActivity extends Activity implements Runnable {
             @Override
             public void onItemSelected(AdapterView<?> parentView,
                                        View selectedItemView, int position, long id) {
-                if (!msCombinedResult.equals(""))
-                    mCopyButton.setVisibility(View.INVISIBLE);
-                if (mResultTV != null)
-                    mResultTV.setText("");
+                if (mResultsContainer != null)
+                    mResultsContainer.removeAllViews();
+                mFileResults.clear();
             }
 
             @Override
@@ -126,24 +127,12 @@ public class FileActivity extends Activity implements Runnable {
             }
         });
 
-        mCopyButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mClipboard != null) {
-                    mClipboard.setText(msCombinedResult);
-                    String sCopied = getString(R.string.copied);
-                    Toast.makeText(FileActivity.this, sCopied,
-                            Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
-
         mCheckBox.setChecked(false); // lower case by default
         mCheckBox.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Re-render with the new case if a result already exists
-                if (!msCombinedResult.equals("")) {
+                // Re-render with the new case if results already exist
+                if (!mFileResults.isEmpty()) {
                     RenderResult();
                 }
             }
@@ -250,9 +239,6 @@ public class FileActivity extends Activity implements Runnable {
         thread.start();
     }
 
-    // Holds the per-file results computed on the background thread
-    private final List<String[]> mFileResults = new ArrayList<>(); // {fileName, fileSizeDisplay, hashOrEmpty}
-
     @Override
     // Call when the thread is started
     public void run() {
@@ -289,16 +275,16 @@ public class FileActivity extends Activity implements Runnable {
         return String.format("%.2f %sB", lbytes / Math.pow(unit, exp), pre);
     }
 
-    // Rebuilds the displayed text (and clipboard payload) from mFileResults,
-    // honouring the current upper/lower case checkbox state.
+    // Rebuilds one result row per file, each with its own copy button.
     private void RenderResult() {
         Resources res = getResources();
         boolean upper = mCheckBox != null && mCheckBox.isChecked();
-
-        StringBuilder fullText = new StringBuilder();
-        boolean anySuccess = false;
-
         String Function = (miItePos >= 0 && miItePos < mFunctions.length) ? mFunctions[miItePos] : "";
+
+        if (mResultsContainer != null)
+            mResultsContainer.removeAllViews();
+
+        LayoutInflater inflater = getLayoutInflater();
 
         for (String[] entry : mFileResults) {
             String fileName = entry[0];
@@ -308,25 +294,42 @@ public class FileActivity extends Activity implements Runnable {
             String sFileNameTitle = String.format(res.getString(R.string.FileName), fileName);
             String sFileSizeTitle = String.format(res.getString(R.string.FileSize), sizeDisplay);
             String sFileHashTitle;
+            final String copyPayload;
 
             if (!hash.equals("")) {
-                hash = upper ? hash.toUpperCase() : hash.toLowerCase();
-                sFileHashTitle = String.format(res.getString(R.string.Hash), Function, hash);
-                anySuccess = true;
+                String displayHash = upper ? hash.toUpperCase() : hash.toLowerCase();
+                sFileHashTitle = String.format(res.getString(R.string.Hash), Function, displayHash);
+                copyPayload = sFileNameTitle + sFileSizeTitle + sFileHashTitle;
             } else {
                 sFileHashTitle = String.format(res.getString(R.string.unable_to_calculate), fileName);
+                copyPayload = null;
             }
 
-            fullText.append(sFileNameTitle).append(sFileSizeTitle).append(sFileHashTitle).append("\n\n");
+            View row = inflater.inflate(R.layout.file_result_row, mResultsContainer, false);
+            TextView rowText = (TextView) row.findViewById(R.id.row_result_text);
+            Button rowCopyButton = (Button) row.findViewById(R.id.row_copy_button);
+
+            rowText.setText(sFileNameTitle + sFileSizeTitle + sFileHashTitle);
+
+            if (copyPayload != null) {
+                rowCopyButton.setVisibility(View.VISIBLE);
+                rowCopyButton.setOnClickListener(new OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if (mClipboard != null) {
+                            mClipboard.setText(copyPayload);
+                            Toast.makeText(FileActivity.this, getString(R.string.copied),
+                                    Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+            } else {
+                rowCopyButton.setVisibility(View.GONE);
+            }
+
+            if (mResultsContainer != null)
+                mResultsContainer.addView(row);
         }
-
-        msCombinedResult = fullText.toString().trim();
-
-        if (mResultTV != null)
-            mResultTV.setText(msCombinedResult);
-
-        if (mCopyButton != null)
-            mCopyButton.setVisibility(anySuccess ? View.VISIBLE : View.INVISIBLE);
     }
 
     // This method is called when the computation is over
