@@ -101,58 +101,52 @@ public class MainActivity extends TabActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-        switch (id) {
-            case R.id.menu_help:
-                LayoutInflater help_inflater = getLayoutInflater();
-                View HelpView = help_inflater.inflate(R.layout.help,
-                        (ViewGroup) findViewById(R.id.help_layout_root));
+        if (id == R.id.menu_help) {
+            LayoutInflater help_inflater = getLayoutInflater();
+            View HelpView = help_inflater.inflate(R.layout.help,
+                    (ViewGroup) findViewById(R.id.help_layout_root));
 
-                new AlertDialog.Builder(this)
-                        .setIcon(0)
-                        .setTitle(getString(R.string.label_menu_help))
-                        .setView(HelpView)
-                        .setPositiveButton(getString(R.string.Close_but),
-                                new DialogInterface.OnClickListener() {
+            new AlertDialog.Builder(this)
+                    .setIcon(0)
+                    .setTitle(getString(R.string.label_menu_help))
+                    .setView(HelpView)
+                    .setPositiveButton(getString(R.string.Close_but),
+                            new DialogInterface.OnClickListener() {
 
-                                    @Override
-                                    public void onClick(DialogInterface dialog,
-                                                        int which) {
-                                        // TODO Auto-generated method stub
-                                    }
-                                }).show();
-                break;
-            case R.id.menu_rateit:
-                Intent intent = new Intent(Intent.ACTION_VIEW);
-                intent.setData(Uri
-                        .parse("market://details?id=" + getPackageName()));
-                startActivity(intent);
-                break;
-            case R.id.menu_about:
-                LayoutInflater about_inflater = getLayoutInflater();
-                View AboutView = about_inflater.inflate(R.layout.about,
-                        (ViewGroup) findViewById(R.id.about_layout_root));
+                                @Override
+                                public void onClick(DialogInterface dialog,
+                                                    int which) {
+                                    // TODO Auto-generated method stub
+                                }
+                            }).show();
+        } else if (id == R.id.menu_rateit) {
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            intent.setData(Uri
+                    .parse("market://details?id=" + getPackageName()));
+            startActivity(intent);
+        } else if (id == R.id.menu_about) {
+            LayoutInflater about_inflater = getLayoutInflater();
+            View AboutView = about_inflater.inflate(R.layout.about,
+                    (ViewGroup) findViewById(R.id.about_layout_root));
 
-                TextView vVersion = (TextView) AboutView
-                        .findViewById(R.id.about_version);
-                String sVersion = vVersion.getText().toString();
-                vVersion.setText(sVersion + " " + getSoftwareVersion());
+            TextView vVersion = (TextView) AboutView
+                    .findViewById(R.id.about_version);
+            String sVersion = vVersion.getText().toString();
+            vVersion.setText(sVersion + " " + getSoftwareVersion());
 
-                new AlertDialog.Builder(this)
-                        .setIcon(0)
-                        .setTitle(getString(R.string.label_menu_about))
-                        .setView(AboutView)
-                        .setPositiveButton(getString(R.string.Close_but),
-                                new DialogInterface.OnClickListener() {
+            new AlertDialog.Builder(this)
+                    .setIcon(0)
+                    .setTitle(getString(R.string.label_menu_about))
+                    .setView(AboutView)
+                    .setPositiveButton(getString(R.string.Close_but),
+                            new DialogInterface.OnClickListener() {
 
-                                    @Override
-                                    public void onClick(DialogInterface dialog,
-                                                        int which) {
-                                        // TODO Auto-generated method stub
-                                    }
-                                }).show();
-                break;
-            default:
-                break;
+                                @Override
+                                public void onClick(DialogInterface dialog,
+                                                    int which) {
+                                    // TODO Auto-generated method stub
+                                }
+                            }).show();
         }
         return true;
     }
