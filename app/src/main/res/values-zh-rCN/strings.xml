@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Hash Droid</string>
+    <string name="tab_text">文本哈希</string>
+    <string name="tab_file">文件哈希</string>
+    <string name="tab_compare">比对哈希值</string>
+    <string name="input_txt">请输入要计算哈希值的文本：</string>
+    <string name="Text">文本：%1$s\n</string>
+    <string name="FileName">名称：%1$s\n</string>
+    <string name="FileSize">大小：%1$s\n</string>
+    <string name="FileDateModified">修改日期：%1$s %2$s\n</string>
+    <string name="Hash">%1$s 校验值：%2$s</string>
+    <string name="but_title_select_file">点击此处选择要计算哈希值的文件</string>
+    <string name="cb_upper_case">结果使用大写显示</string>
+    <string name="unable_to_calculate">无法计算 %1$s 的校验值</string>
+    <string name="wrong_file">文件不存在</string>
+    <string name="calculate_but">计算</string>
+    <string name="clear_but">清除</string>
+    <string name="copy_but">将校验值复制到剪贴板</string>
+    <string name="Ok_but">确定</string>
+    <string name="Cancel_but">取消</string>
+    <string name="Yes_but">是</string>
+    <string name="No_but">否</string>
+    <string name="Close_but">关闭</string>
+    <string name="copied">哈希值已复制到剪贴板</string>
+    <string name="label_menu_about">关于</string>
+    <string name="label_menu_rateit">去评分</string>
+    <string name="label_menu_help">帮助</string>
+    <string name="selectedfile_confirmation">是否要计算文件 %1$s 的哈希值？</string>
+    <string name="selectedfile_error">无法读取 %1$s！</string>
+    <string name="version">版本</string>
+    <string name="copyright">Copyright © 2010–2019 Christophe Bouyer (Hobby One)</string>
+    <string name="LicenseTitle">基于 GPLv3 协议授权</string>
+    <string name="License">This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.\nThis program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.\nYou should have received a copy of the GNU General Public License
+    along with this program. If not, see http://www.gnu.org/licenses/</string>
+    <string name="contact">hobbyone.droid@gmail.com</string>
+    <string name="AlgoList">请选择一种哈希算法：</string>
+    <string name="Calculating">正在计算&#8230;</string>
+    <string-array name="Algo_Array">
+        <item>Adler-32</item>
+        <item>CRC-32</item>
+        <item>Haval-128</item>
+        <item>MD2</item>
+        <item>MD4</item>
+        <item>MD5</item>
+        <item>RIPEMD-128</item>
+        <item>RIPEMD-160</item>
+        <item>SHA-1</item>
+        <item>SHA-256</item>
+        <item>SHA-384</item>
+        <item>SHA-512</item>
+        <item>Tiger</item>
+        <item>Whirlpool</item>
+    </string-array>
+    <string name="input_txt1">请输入第一个哈希值：</string>
+    <string name="input_txt2">请输入第二个哈希值：</string>
+    <string name="compare_but">比对</string>
+    <string name="IdenticalHashes">哈希值匹配！</string>
+    <string name="DifferentHashes">哈希值不匹配！</string>
+</resources>
