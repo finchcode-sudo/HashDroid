@@ -30,6 +30,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.provider.OpenableColumns;
 import android.text.ClipboardManager;
 import android.view.View;
 import android.view.View.OnClickListener;
