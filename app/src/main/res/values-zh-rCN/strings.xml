@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Hash Droid</string>
+    <string name="files_selected">已选择 %1$d 个文件</string>
     <string name="tab_text">文本哈希</string>
     <string name="tab_file">文件哈希</string>
     <string name="tab_compare">比对哈希值</string>
