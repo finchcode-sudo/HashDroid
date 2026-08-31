@@ -197,7 +197,7 @@ public final class Whirlpool extends BaseHash {
      * Trivial 0-arguments constructor.
      */
     public Whirlpool() {
-        super("whirlpool", 20, BLOCK_SIZE);
+        super("whirlpool", 64, BLOCK_SIZE);
     }
 
     /**
