@@ -50,6 +50,7 @@
         <item>MD5</item>
         <item>RIPEMD-128</item>
         <item>RIPEMD-160</item>
+        <item>SM3</item>
         <item>SHA-1</item>
         <item>SHA-256</item>
         <item>SHA-384</item>
