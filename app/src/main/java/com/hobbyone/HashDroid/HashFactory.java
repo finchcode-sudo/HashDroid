@@ -106,6 +106,8 @@ public class HashFactory {
             result = new Sha3_512();
         else if (name.equalsIgnoreCase("blake2b-512"))
             result = new Blake2b512();
+        else if (name.equalsIgnoreCase("sm3"))
+            result = new Sm3();
 
         return result;
     }
