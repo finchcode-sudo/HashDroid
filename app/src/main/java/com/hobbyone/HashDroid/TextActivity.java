@@ -166,37 +166,37 @@ public class TextActivity extends Activity implements Runnable {
         if (miItePos == 0)
             sAlgo = "Adler-32";
         else if (miItePos == 1)
-            sAlgo = "CRC-32";
-        else if (miItePos == 2)
-            sAlgo = "haval";
-        else if (miItePos == 3)
-            sAlgo = "md2";
-        else if (miItePos == 4)
-            sAlgo = "md4";
-        else if (miItePos == 5)
-            sAlgo = "md5";
-        else if (miItePos == 6)
-            sAlgo = "ripemd-128";
-        else if (miItePos == 7)
-            sAlgo = "ripemd-160";
-        else if (miItePos == 8)
-            sAlgo = "sha-1";
-        else if (miItePos == 9)
-            sAlgo = "sha-256";
-        else if (miItePos == 10)
-            sAlgo = "sha-384";
-        else if (miItePos == 11)
-            sAlgo = "sha-512";
-        else if (miItePos == 12)
-            sAlgo = "tiger";
-        else if (miItePos == 13)
-            sAlgo = "whirlpool";
-        else if (miItePos == 14)
-            sAlgo = "sha3-256";
-        else if (miItePos == 15)
-            sAlgo = "sha3-512";
-        else if (miItePos == 16)
             sAlgo = "blake2b-512";
+        else if (miItePos == 2)
+            sAlgo = "CRC-32";
+        else if (miItePos == 3)
+            sAlgo = "Haval";
+        else if (miItePos == 4)
+            sAlgo = "md2";
+        else if (miItePos == 5)
+            sAlgo = "md4";
+        else if (miItePos == 6)
+            sAlgo = "md5";
+        else if (miItePos == 7)
+            sAlgo = "ripemd-128";
+        else if (miItePos == 8)
+            sAlgo = "ripemd-160";
+        else if (miItePos == 9)
+            sAlgo = "sha-1";
+        else if (miItePos == 10)
+            sAlgo = "sha-256";
+        else if (miItePos == 11)
+            sAlgo = "sha-384";
+        else if (miItePos == 12)
+            sAlgo = "sha-512";
+        else if (miItePos == 13)
+            sAlgo = "sha3-256";
+        else if (miItePos == 14)
+            sAlgo = "sha3-512";
+        else if (miItePos == 15)
+            sAlgo = "tiger";
+        else if (miItePos == 16)
+            sAlgo = "whirlpool";
         mHashOpe.SetAlgorithm(sAlgo);
 
         String sCalculating = getString(R.string.Calculating);
