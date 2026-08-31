@@ -58,9 +58,9 @@ public class CompareActivity extends Activity {
             public void onClick(View v) {
                 // Perform action on clicks
                 Editable InputEdit1 = mEditText1.getText();
-                String sInputText1 = InputEdit1.toString();
+                String sInputText1 = InputEdit1.toString().trim();
                 Editable InputEdit2 = mEditText2.getText();
-                String sInputText2 = InputEdit2.toString();
+                String sInputText2 = InputEdit2.toString().trim();
                 if (sInputText1 != null && sInputText2 != null) {
                     String sText = "";
                     int IsIdentical = sInputText1
