@@ -53,13 +53,14 @@
         <item>MD5</item>
         <item>RIPEMD-128</item>
         <item>RIPEMD-160</item>
-        <item>SM3</item>
+        
         <item>SHA-1</item>
         <item>SHA-256</item>
         <item>SHA-384</item>
         <item>SHA-512</item>
         <item>SHA3-256</item>
         <item>SHA3-512</item>
+        <item>SM3</item>
         <item>Tiger</item>
         <item>Whirlpool</item>
     </string-array>
