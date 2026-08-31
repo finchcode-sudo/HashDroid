@@ -77,7 +77,7 @@ public class TextActivity extends Activity implements Runnable {
                 this, R.array.Algo_Array, android.R.layout.simple_spinner_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         mSpinner.setAdapter(adapter);
-        mSpinner.setSelection(5); // MD5 by default
+        mSpinner.setSelection(6); // MD5 by default
         mSpinner.setOnItemSelectedListener(new OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parentView,
