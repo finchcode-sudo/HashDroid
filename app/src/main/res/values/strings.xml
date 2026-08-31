@@ -45,6 +45,7 @@
     <string name="Calculating">Calculating&#8230;</string>
     <string-array name="Algo_Array">
         <item>Adler-32</item>
+        <item>BLAKE2b-512</item>
         <item>CRC-32</item>
         <item>Haval-128</item>
         <item>MD2</item>
@@ -56,11 +57,10 @@
         <item>SHA-256</item>
         <item>SHA-384</item>
         <item>SHA-512</item>
-        <item>Tiger</item>
-        <item>Whirlpool</item>
         <item>SHA3-256</item>
         <item>SHA3-512</item>
-        <item>BLAKE2b-512</item>
+        <item>Tiger</item>
+        <item>Whirlpool</item>
     </string-array>
     <string name="input_txt1">Please enter first hash:</string>
     <string name="input_txt2">Please enter second hash:</string>
