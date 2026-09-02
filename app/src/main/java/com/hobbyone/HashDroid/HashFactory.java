@@ -90,6 +90,8 @@ public class HashFactory {
             result = new RipeMD160();
         else if (name.equalsIgnoreCase("sha-1"))
             result = new Sha160();
+        else if (name.equalsIgnoreCase("sha-224"))
+            result = new Sha224();
         else if (name.equalsIgnoreCase("sha-256"))
             result = new Sha256();
         else if (name.equalsIgnoreCase("sha-384"))
