@@ -40,7 +40,7 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.\nYou should have received a copy of the GNU General Public License
     along with this program. If not, see http://www.gnu.org/licenses/</string>
-    <string name="contact">https://github.com/finchcode-sudo/HashDroid</string>
+    <string name="contact">hobbyone.droid@gmail.com</string>
     <string name="AlgoList">Please select a hash algorithm:</string>
     <string name="Calculating">Calculating&#8230;</string>
     <string-array name="Algo_Array">
