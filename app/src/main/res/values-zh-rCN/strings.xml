@@ -37,7 +37,7 @@
 本程序的分发是希望它会有用，但没有任何担保；甚至没有对适销性或特定用途适用性的默示担保。详情请参见 GNU 通用公共许可证。
 
 您应该已经随本程序收到了一份 GNU 通用公共许可证的副本。如果没有，请参见 http://www.gnu.org/licenses/</string>
-    <string name="contact">hobbyone.droid@gmail.com</string>
+    <string name="contact">https://github.com/finchcode-sudo/HashDroid</string>
     <string name="AlgoList">请选择一种哈希算法：</string>
     <string name="Calculating">正在计算&#8230;</string>
     <string-array name="Algo_Array">
