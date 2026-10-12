@@ -20,6 +20,7 @@ along with Hash Droid. If not, see <http://www.gnu.org/licenses/>.
 package com.hobbyone.HashDroid;
 
 import android.app.AlertDialog;
+import android.content.ActivityNotFoundException;
 import android.app.TabActivity;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -120,10 +121,21 @@ public class MainActivity extends TabActivity {
                                 }
                             }).show();
         } else if (id == R.id.menu_rateit) {
+            // Some devices have no app store installed: never let this crash the app.
             Intent intent = new Intent(Intent.ACTION_VIEW);
             intent.setData(Uri
                     .parse("market://details?id=" + getPackageName()));
-            startActivity(intent);
+            try {
+                startActivity(intent);
+            } catch (ActivityNotFoundException e) {
+                try {
+                    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(
+                            "https://play.google.com/store/apps/details?id="
+                                    + getPackageName())));
+                } catch (ActivityNotFoundException e2) {
+                    // no store and no browser: nothing to do
+                }
+            }
         } else if (id == R.id.menu_about) {
             LayoutInflater about_inflater = getLayoutInflater();
             View AboutView = about_inflater.inflate(R.layout.about,
