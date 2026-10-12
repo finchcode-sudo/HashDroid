@@ -22,6 +22,7 @@ package com.hobbyone.HashDroid;
 import java.io.InputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.zip.Adler32;
 import java.util.zip.CRC32;
 import java.util.zip.Checksum;
@@ -57,11 +58,11 @@ public class HashFunctionOperator {
             Checksum checksumv = null;
             if (_sAlgo.equals("CRC-32")) {
                 CRC32 crc32v = new CRC32();
-                crc32v.update(s.getBytes());
+                crc32v.update(s.getBytes(StandardCharsets.UTF_8));
                 checksumv = crc32v;
             } else if (_sAlgo.equals("Adler-32")) {
                 Adler32 adler32v = new Adler32();
-                adler32v.update(s.getBytes());
+                adler32v.update(s.getBytes(StandardCharsets.UTF_8));
                 checksumv = adler32v;
             }
             if (checksumv != null) {
@@ -73,7 +74,7 @@ public class HashFunctionOperator {
         } else {
             IMessageDigest MessageDig = HashFactory.getInstance(_sAlgo);
             if (MessageDig != null) {
-                byte[] in = s.getBytes();
+                byte[] in = s.getBytes(StandardCharsets.UTF_8);
                 MessageDig.update(in, 0, in.length);
                 byte messageDigest[] = MessageDig.digest();
                 sReturnedStr = CreateHashString(messageDigest);
@@ -88,7 +89,7 @@ public class HashFunctionOperator {
         if (null != inputstream) {
             if (_sAlgo.equals("CRC-32") || _sAlgo.equals("Adler-32")) {
                 try {
-                    byte[] databytes = new byte[1024];
+                    byte[] databytes = new byte[65536];
                     int nread = 0;
                     long value = 0;
                     Checksum checksumv = null;
@@ -100,7 +101,7 @@ public class HashFunctionOperator {
                         checksumv = adler32v;
                     }
                     if (checksumv != null) {
-                        while ((nread = inputstream.read(databytes)) > 0) {
+                        while ((nread = inputstream.read(databytes)) != -1) {
                             checksumv.update(databytes, 0, nread);
                         }
                         value = checksumv.getValue();
@@ -115,7 +116,7 @@ public class HashFunctionOperator {
                 try {
                     IMessageDigest MessageDig = HashFactory.getInstance(_sAlgo);
                     if (MessageDig != null) {
-                        byte[] databytes = new byte[1024];
+                        byte[] databytes = new byte[65536];
                         int nread = 0;
                         while ((nread = inputstream.read(databytes)) != -1) {
                             MessageDig.update(databytes, 0, nread);
