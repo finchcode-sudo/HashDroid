@@ -29,6 +29,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 import android.provider.OpenableColumns;
 import android.text.ClipboardManager;
@@ -46,6 +47,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -63,6 +65,8 @@ public class FileActivity extends Activity implements Runnable {
     private ProgressDialog mProgressDialog = null;
     private int miItePos = -1;
     private List<Uri> mSelectedFileUris = new ArrayList<>();
+    // Snapshot of the files being hashed (read by the worker thread)
+    private List<Uri> mWorkUris = new ArrayList<>();
 
     // Holds the per-file results computed on the background thread
     private final List<String[]> mFileResults = new ArrayList<>(); // {fileName, fileSizeDisplay, hashOrEmpty}
@@ -121,6 +125,8 @@ public class FileActivity extends Activity implements Runnable {
             @Override
             public void onClick(View v) {
                 if (!mSelectedFileUris.isEmpty()) {
+                    if (mProgressDialog != null && mProgressDialog.isShowing())
+                        return; // already computing
                     miItePos = mSpinner.getSelectedItemPosition();
                     ComputeAndDisplayHash();
                 }
@@ -169,24 +175,41 @@ public class FileActivity extends Activity implements Runnable {
 
     private String getFileName(Uri uri) {
         String name = "";
-        Cursor cursor = getContentResolver().query(uri, null, null, null, null);
-        if (cursor != null && cursor.moveToFirst()) {
-            int idx = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
-            if (idx >= 0)
-                name = cursor.getString(idx);
-            cursor.close();
+        Cursor cursor = null;
+        try {
+            cursor = getContentResolver().query(uri, null, null, null, null);
+            if (cursor != null && cursor.moveToFirst()) {
+                int idx = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+                if (idx >= 0) {
+                    String n = cursor.getString(idx);
+                    if (n != null)
+                        name = n;
+                }
+            }
+        } catch (RuntimeException e) {
+            // fall through with empty name
+        } finally {
+            if (cursor != null)
+                cursor.close();
         }
         return name;
     }
 
     private long getFileSize(Uri uri) {
         long size = -1;
-        Cursor cursor = getContentResolver().query(uri, null, null, null, null);
-        if (cursor != null && cursor.moveToFirst()) {
-            int idx = cursor.getColumnIndex(OpenableColumns.SIZE);
-            if (idx >= 0)
-                size = cursor.getLong(idx);
-            cursor.close();
+        Cursor cursor = null;
+        try {
+            cursor = getContentResolver().query(uri, null, null, null, null);
+            if (cursor != null && cursor.moveToFirst()) {
+                int idx = cursor.getColumnIndex(OpenableColumns.SIZE);
+                if (idx >= 0 && !cursor.isNull(idx))
+                    size = cursor.getLong(idx);
+            }
+        } catch (RuntimeException e) {
+            // fall through with unknown size
+        } finally {
+            if (cursor != null)
+                cursor.close();
         }
         return size;
     }
@@ -234,6 +257,7 @@ public class FileActivity extends Activity implements Runnable {
         else if (miItePos == 18)
             sAlgo = "whirlpool";
         mHashOpe.SetAlgorithm(sAlgo);
+        mWorkUris = new ArrayList<>(mSelectedFileUris);
 
         String sCalculating = getString(R.string.Calculating);
         mProgressDialog = ProgressDialog.show(FileActivity.this, "",
@@ -244,29 +268,36 @@ public class FileActivity extends Activity implements Runnable {
     }
 
     @Override
-    // Call when the thread is started
+    // Runs on the worker thread. Results are built locally and handed to the UI thread.
     public void run() {
-        mFileResults.clear();
+        final List<String[]> results = new ArrayList<>();
 
-        for (Uri uri : mSelectedFileUris) {
+        for (Uri uri : mWorkUris) {
             String fileName = getFileName(uri);
             long size = getFileSize(uri);
             String sizeDisplay = size >= 0 ? FileSizeDisplay(size, false) : "";
             String hash = "";
 
-            if (mHashOpe != null) {
-                InputStream inputStream = null;
-                try {
-                    inputStream = getContentResolver().openInputStream(uri);
-                } catch (FileNotFoundException e1) {
-                }
-                if (null != inputStream) {
+            InputStream inputStream = null;
+            try {
+                inputStream = getContentResolver().openInputStream(uri);
+                if (inputStream != null && mHashOpe != null)
                     hash = mHashOpe.FileToHash(inputStream);
+            } catch (FileNotFoundException e) {
+                // leave hash empty -> "unable to compute"
+            } catch (RuntimeException e) {
+                // e.g. SecurityException: leave hash empty
+            } finally {
+                if (inputStream != null) {
+                    try {
+                        inputStream.close();
+                    } catch (IOException ignored) {
+                    }
                 }
             }
-            mFileResults.add(new String[]{fileName, sizeDisplay, hash});
+            results.add(new String[]{fileName, sizeDisplay, hash});
         }
-        handler.sendEmptyMessage(0);
+        handler.sendMessage(handler.obtainMessage(0, results));
     }
 
     private String FileSizeDisplay(long lbytes, boolean bSI) {
@@ -336,13 +367,36 @@ public class FileActivity extends Activity implements Runnable {
         }
     }
 
-    // This method is called when the computation is over
-    private Handler handler = new Handler() {
+    // This method is called (on the UI thread) when the computation is over
+    private final Handler handler = new Handler(Looper.getMainLooper()) {
         @Override
+        @SuppressWarnings("unchecked")
         public void handleMessage(Message msg) {
-            if (mProgressDialog != null)
-                mProgressDialog.dismiss();
+            dismissProgress();
+            if (isFinishing() || isDestroyed())
+                return;
+            mFileResults.clear();
+            if (msg.obj instanceof List)
+                mFileResults.addAll((List<String[]>) msg.obj);
             RenderResult();
         }
     };
+
+    private void dismissProgress() {
+        if (mProgressDialog != null) {
+            try {
+                if (mProgressDialog.isShowing())
+                    mProgressDialog.dismiss();
+            } catch (IllegalArgumentException ignored) {
+                // window already detached
+            }
+            mProgressDialog = null;
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        dismissProgress();
+        super.onDestroy();
+    }
 }
