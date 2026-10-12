@@ -24,6 +24,7 @@ import android.app.ProgressDialog;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 import android.text.ClipboardManager;
 import android.text.Editable;
@@ -114,6 +115,8 @@ public class TextActivity extends Activity implements Runnable {
             @Override
             public void onClick(View v) {
                 // Perform action on clicks
+                if (mProgressDialog != null && mProgressDialog.isShowing())
+                    return; // already computing
                 miItePos = mSpinner.getSelectedItemPosition();
                 Editable InputEdit = mEditText.getText();
                 msToHash = InputEdit.toString();
@@ -150,7 +153,7 @@ public class TextActivity extends Activity implements Runnable {
                     }
                     if (mResultTV != null) {
                         String sResult = mResultTV.getText().toString();
-                        sResult = sResult.replaceAll(OldHash, msHash);
+                        sResult = sResult.replace(OldHash, msHash);
                         mResultTV.setText(sResult);
                     }
                 }
@@ -221,12 +224,13 @@ public class TextActivity extends Activity implements Runnable {
     }
 
     // This method is called when the computation is over
-    private Handler handler = new Handler() {
+    private final Handler handler = new Handler(Looper.getMainLooper()) {
         @Override
         public void handleMessage(Message msg) {
             // Hide the progress dialog
-            if (mProgressDialog != null)
-                mProgressDialog.dismiss();
+            dismissProgress();
+            if (isFinishing() || isDestroyed())
+                return;
 
             Resources res = getResources();
             String sTextTitle = String.format(res.getString(R.string.Text),
@@ -260,4 +264,22 @@ public class TextActivity extends Activity implements Runnable {
                 mResultTV.setText(sTextTitle + sTextHashTitle);
         }
     };
+
+    private void dismissProgress() {
+        if (mProgressDialog != null) {
+            try {
+                if (mProgressDialog.isShowing())
+                    mProgressDialog.dismiss();
+            } catch (IllegalArgumentException ignored) {
+                // window already detached
+            }
+            mProgressDialog = null;
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        dismissProgress();
+        super.onDestroy();
+    }
 }
