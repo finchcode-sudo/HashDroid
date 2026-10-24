@@ -125,6 +125,8 @@ public class MainActivity extends TabActivity {
             Intent intent = new Intent(Intent.ACTION_VIEW);
             intent.setData(Uri
                     .parse("market://details?id=" + getPackageName()));
+            // Force Google Play; if it is not installed, fall back to the web page below.
+            intent.setPackage("com.android.vending");
             try {
                 startActivity(intent);
             } catch (ActivityNotFoundException e) {
