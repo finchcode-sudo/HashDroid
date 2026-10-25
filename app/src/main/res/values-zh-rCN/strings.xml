@@ -25,7 +25,6 @@
     <string name="Close_but">关闭</string>
     <string name="copied">哈希值已复制到剪贴板</string>
     <string name="label_menu_about">关于</string>
-    <string name="label_menu_rateit">去评分</string>
     <string name="label_menu_help">帮助</string>
     <string name="selectedfile_confirmation">是否要计算文件 %1$s 的哈希值？</string>
     <string name="selectedfile_error">无法读取 %1$s！</string>
