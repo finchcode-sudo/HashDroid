@@ -20,7 +20,6 @@ along with Hash Droid. If not, see <http://www.gnu.org/licenses/>.
 package com.hobbyone.HashDroid;
 
 import android.app.AlertDialog;
-import android.content.ActivityNotFoundException;
 import android.app.TabActivity;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -28,7 +27,6 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.PixelFormat;
-import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -120,24 +118,6 @@ public class MainActivity extends TabActivity {
                                     // TODO Auto-generated method stub
                                 }
                             }).show();
-        } else if (id == R.id.menu_rateit) {
-            // Some devices have no app store installed: never let this crash the app.
-            Intent intent = new Intent(Intent.ACTION_VIEW);
-            intent.setData(Uri
-                    .parse("market://details?id=" + getPackageName()));
-            // Force Google Play; if it is not installed, fall back to the web page below.
-            intent.setPackage("com.android.vending");
-            try {
-                startActivity(intent);
-            } catch (ActivityNotFoundException e) {
-                try {
-                    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(
-                            "https://play.google.com/store/apps/details?id="
-                                    + getPackageName())));
-                } catch (ActivityNotFoundException e2) {
-                    // no store and no browser: nothing to do
-                }
-            }
         } else if (id == R.id.menu_about) {
             LayoutInflater about_inflater = getLayoutInflater();
             View AboutView = about_inflater.inflate(R.layout.about,
